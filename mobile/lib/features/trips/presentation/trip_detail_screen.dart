@@ -195,14 +195,7 @@ class _WorkflowSection extends ConsumerWidget {
         ],
       );
     }
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: OutlinedButton.icon(
-        icon: const Icon(Icons.receipt_long),
-        label: const Text('View quotation'),
-        onPressed: () => context.push(Routes.quotation(trip.id)),
-      ),
-    );
+    return const SizedBox.shrink();
   }
 }
 
