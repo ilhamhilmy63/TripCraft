@@ -1,0 +1,64 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using TripCraft.Application.Common;
+using TripCraft.Application.Common.Auditing;
+using TripCraft.Application.Identity;
+using TripCraft.Application.Quotations;
+using TripCraft.Application.Quotations.Reports;
+using TripCraft.Application.Resources;
+using TripCraft.Application.Trips;
+using TripCraft.Application.Workflows;
+using TripCraft.Infrastructure.External;
+using TripCraft.Infrastructure.Identity;
+using TripCraft.Infrastructure.Persistence;
+using TripCraft.Infrastructure.Persistence.Auditing;
+using TripCraft.Infrastructure.Persistence.Reporting;
+using TripCraft.Infrastructure.Persistence.Seeding;
+using TripCraft.Infrastructure.Quotations;
+using TripCraft.Infrastructure.Resources;
+using TripCraft.Infrastructure.Trips;
+using TripCraft.Infrastructure.Workflows;
+
+namespace TripCraft.Infrastructure;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services, IConfiguration configuration, JwtSettings jwtSettings)
+    {
+        var databaseUrl = configuration["DATABASE_URL"];
+        services.AddDbContext<AppDbContext>(options =>
+        {
+            if (string.IsNullOrWhiteSpace(databaseUrl))
+                throw new InvalidOperationException(
+                    "DATABASE_URL is not set. Add it with 'dotnet user-secrets set DATABASE_URL ...' or an environment variable.");
+
+            options.UseNpgsql(ConnectionStringParser.ToNpgsql(databaseUrl))
+                   .UseSnakeCaseNamingConvention();
+        });
+
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+        services.AddScoped<IDatabaseHealth, DatabaseHealth>();
+        services.AddScoped<IAuditLogger, AuditLogger>();
+        services.AddScoped<IAuditLogReader, AuditLogReader>();
+
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ITripRequestRepository, TripRequestRepository>();
+        services.AddScoped<IAttractionRepository, AttractionRepository>();
+        services.AddSingleton<IPassportPhotoStore, LocalPassportPhotoStore>();
+        services.AddScoped<IAgentWorkflowRepository, AgentWorkflowRepository>();
+        services.AddScoped<IResourceRepository, ResourceRepository>();
+        services.AddScoped<IQuotationRepository, QuotationRepository>();
+        services.AddScoped<IReportQueries, ReportQueries>();
+
+        services.AddWorkflows(configuration);
+        services.AddExternalServices(configuration);
+        services.AddScoped<DataSeeder>();
+
+        services.AddSingleton(jwtSettings);
+        services.AddSingleton<ITokenService, JwtTokenService>();
+
+        return services;
+    }
+}

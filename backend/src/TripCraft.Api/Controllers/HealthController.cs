@@ -1,0 +1,49 @@
+using System.Diagnostics;
+using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using TripCraft.Application.Common;
+
+namespace TripCraft.Api.Controllers;
+
+/// <summary>
+/// {status, version, db, dbLatencyMs} for Render's health check and the demo warm-up. dbLatencyMs is the time of
+/// one database round trip, so k6 (tests/perf/db-response.js) can report database response time under load.
+/// </summary>
+public record HealthResponse(string Status, string Version, string Db, double DbLatencyMs, DateTime TimeUtc);
+
+[ApiController]
+[AllowAnonymous]
+[Route("health")]
+public class HealthController(IDatabaseHealth database) : ControllerBase
+{
+    private static readonly TimeSpan DbTimeout = TimeSpan.FromSeconds(3);
+
+    /// <summary>200 when the database answers; 503 ("degraded", db "fail") when it does not.</summary>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult<HealthResponse>> Get(CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(DbTimeout);
+        var stopwatch = Stopwatch.StartNew();
+        var dbOk = await database.CanConnectAsync(timeout.Token);
+        var dbLatencyMs = Math.Round(stopwatch.Elapsed.TotalMilliseconds, 1);
+
+        var body = new HealthResponse(dbOk ? "ok" : "degraded", AppVersion, dbOk ? "ok" : "fail", dbLatencyMs,
+            DateTime.UtcNow);
+        return dbOk ? Ok(body) : StatusCode(StatusCodes.Status503ServiceUnavailable, body);
+    }
+
+    /// <summary>Assembly version plus the short git commit Render injects (RENDER_GIT_COMMIT), e.g. "1.0.0+3f2c1ab".</summary>
+    private static readonly string AppVersion = BuildVersion();
+
+    private static string BuildVersion()
+    {
+        var version = typeof(HealthController).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion.Split('+')[0] ?? "0.0.0";
+        var commit = Environment.GetEnvironmentVariable("RENDER_GIT_COMMIT");
+        return string.IsNullOrWhiteSpace(commit) ? version : $"{version}+{commit[..Math.Min(7, commit.Length)]}";
+    }
+}
