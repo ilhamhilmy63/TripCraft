@@ -2,14 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../features/quotations/presentation/notifications_screen.dart';
-import '../../features/quotations/presentation/quotation_screen.dart';
 import '../../features/resources/presentation/qr_scan_screen.dart';
 import '../../features/resources/presentation/schedule_screen.dart';
 import '../../features/resources/presentation/trip_day_screen.dart';
-import '../../features/trips/presentation/my_trips_screen.dart';
-import '../../features/trips/presentation/new_trip_screen.dart';
-import '../../features/trips/presentation/trip_detail_screen.dart';
 import '../auth/auth_notifier.dart';
 import '../auth/login_screen.dart';
 import '../auth/register_screen.dart';
@@ -45,24 +40,6 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state, child) =>
             RoleShell(location: state.matchedLocation, child: child),
         routes: [
-          GoRoute(path: Routes.trips, builder: (_, _) => const MyTripsScreen()),
-          GoRoute(
-            path: Routes.newTrip,
-            builder: (_, _) => const NewTripScreen(),
-          ),
-          GoRoute(
-            path: '/trips/:id',
-            builder: (_, s) =>
-                TripDetailScreen(tripId: s.pathParameters['id']!),
-          ),
-          GoRoute(
-            path: '/trips/:id/quotation',
-            builder: (_, s) => QuotationScreen(tripId: s.pathParameters['id']!),
-          ),
-          GoRoute(
-            path: Routes.alerts,
-            builder: (_, _) => const NotificationsScreen(),
-          ),
           GoRoute(
             path: Routes.schedule,
             builder: (_, _) => const ScheduleScreen(),
