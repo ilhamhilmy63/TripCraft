@@ -50,7 +50,13 @@ app.UseCors("Web");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", service = "WorkForce360.Api" }));
+
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "healthy",
+    service = "WorkForce360.Api",
+    timestampUtc = DateTime.UtcNow
+}));
 
 if (app.Environment.IsDevelopment())
 {
