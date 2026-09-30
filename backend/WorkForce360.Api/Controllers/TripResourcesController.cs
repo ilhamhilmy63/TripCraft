@@ -27,6 +27,9 @@ public class TripResourcesController(TripDbContext db,ResourceHoldService holds)
 [ApiController,Route("api/attractions"),Authorize]
 public class AttractionsController(TripDbContext db):ControllerBase
 {
+ /// <summary>
+/// Returns available attractions, optionally filtered by city.
+/// </summary>
  [HttpGet]public async Task<IActionResult> Get(string? city)=>Ok(await db.Attractions.AsNoTracking().Where(x=>!x.IsDeleted&&(city==null||x.City==city)).OrderBy(x=>x.City).ThenBy(x=>x.Name).ToListAsync());
  [HttpPost,Authorize(Roles="OperationsManager")]public async Task<IActionResult> Create(Attraction x){x.Id=Guid.NewGuid();db.Add(x);await db.SaveChangesAsync();return Created($"/api/attractions/{x.Id}",x);}
  [HttpPut("{id:guid}"),Authorize(Roles="OperationsManager")]public async Task<IActionResult> Update(Guid id,Attraction x){var a=await db.Attractions.FindAsync(id);if(a is null)return NotFound();a.Name=x.Name;a.City=x.City;a.Category=x.Category;a.DurationMinutes=x.DurationMinutes;a.EntryFeeLkr=x.EntryFeeLkr;a.Latitude=x.Latitude;a.Longitude=x.Longitude;await db.SaveChangesAsync();return NoContent();}
