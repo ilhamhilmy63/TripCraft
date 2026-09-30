@@ -25,6 +25,10 @@ public class TripResourcesController(TripDbContext db,ResourceHoldService holds)
 }
 
 [ApiController,Route("api/attractions"),Authorize]
+
+/// <summary>
+/// Manages attraction resources used when planning trips.
+/// </summary>
 public class AttractionsController(TripDbContext db):ControllerBase
 {
  /// <summary>
