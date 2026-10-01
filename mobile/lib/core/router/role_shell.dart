@@ -10,12 +10,12 @@ class _Tab {
   final IconData icon;
 }
 
-const _touristTabs = [
-  _Tab(Routes.trips, 'My trips', Icons.luggage_outlined),
-  _Tab(Routes.newTrip, 'New trip', Icons.add_circle_outline),
+const _guideTabs = [
+  _Tab(Routes.schedule, 'Schedule', Icons.event_note_outlined),
+  _Tab(Routes.scan, 'Scan voucher', Icons.qr_code_scanner),
 ];
 
-/// Bottom navigation for Student A's tourist trip-request screens.
+/// Bottom navigation for Student B's guide resource workflow.
 class RoleShell extends StatelessWidget {
   const RoleShell({super.key, required this.location, required this.child});
 
@@ -24,7 +24,7 @@ class RoleShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const tabs = _touristTabs;
+    const tabs = _guideTabs;
     // The most specific tab whose path starts the location ("/trips/new" beats "/trips").
     final sorted = [...tabs]
       ..sort((a, b) => b.path.length.compareTo(a.path.length));
