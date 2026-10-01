@@ -8,9 +8,10 @@ import type { Role } from '@/shared/api/types';
 import { AppLayout } from './AppLayout';
 
 const NotFoundPage = lazy(() => import('./NotFoundPage'));
-const TripsListPage = lazy(() => import('@/features/trips/TripsListPage'));
-const TripDetailPage = lazy(() => import('@/features/trips/TripDetailPage'));
-const AttractionsPage = lazy(() => import('@/features/trips/AttractionsPage'));
+const GuidesPage = lazy(() => import('@/features/resources/GuidesPage'));
+const VehiclesPage = lazy(() => import('@/features/resources/VehiclesPage'));
+const HotelsPage = lazy(() => import('@/features/resources/HotelsPage'));
+const AvailabilityPage = lazy(() => import('@/features/resources/AvailabilityPage'));
 
 const MANAGER: Role[] = ['OperationsManager'];
 
@@ -19,7 +20,7 @@ const guard = (roles: Role[], element: ReactNode) => <RoleGuard roles={roles}>{e
 export const routes: RouteObject[] = [
   {
     path: '/',
-    element: <Navigate to="/trips" replace />,
+    element: <Navigate to="/resources/guides" replace />,
   },
   { path: '/login', element: <LoginPage /> },
   {
@@ -28,9 +29,10 @@ export const routes: RouteObject[] = [
       {
         element: <AppLayout />,
         children: [
-          { path: 'trips', element: guard(MANAGER, <TripsListPage />) },
-          { path: 'trips/:id', element: guard(MANAGER, <TripDetailPage />) },
-          { path: 'attractions', element: guard(MANAGER, <AttractionsPage />) },
+          { path: 'resources/guides', element: guard(MANAGER, <GuidesPage />) },
+          { path: 'resources/vehicles', element: guard(MANAGER, <VehiclesPage />) },
+          { path: 'resources/hotels', element: guard(MANAGER, <HotelsPage />) },
+          { path: 'availability', element: guard(MANAGER, <AvailabilityPage />) },
           { path: '*', element: <NotFoundPage /> },
         ],
       },
