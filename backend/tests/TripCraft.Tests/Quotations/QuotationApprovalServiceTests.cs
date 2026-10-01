@@ -178,4 +178,83 @@ public class QuotationApprovalServiceTests
         await act.Should().ThrowAsync<ConflictException>();
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    [Theory]
+    [InlineData("approve")]
+    [InlineData("reject")]
+    [InlineData("revise")]
+    public async Task A_decided_quotation_cannot_be_decided_again(string decision)
+    {
+        _quotations.Setup(q => q.GetAsync(_quotationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new QuotationSummary(_quotationId, _trip.Id, 1, false, 187220, 624.07m));
+
+        var act = () => DecideAsync(decision);
+
+        await act.Should().ThrowAsync<ConflictException>().WithMessage("*already been decided*");
+        VerifyNoDecisionSideEffects();
+    }
+
+    [Theory]
+    [InlineData("approve")]
+    [InlineData("reject")]
+    [InlineData("revise")]
+    public async Task A_missing_workflow_prevents_every_decision(string decision)
+    {
+        _workflows.Setup(w => w.GetLatestForTripAsync(_trip.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((AgentWorkflow?)null);
+
+        var act = () => DecideAsync(decision);
+
+        await act.Should().ThrowAsync<ConflictException>().WithMessage("*no agent workflow*");
+        VerifyNoDecisionSideEffects();
+    }
+
+    [Theory]
+    [InlineData(AgentWorkflowStatus.Planning)]
+    [InlineData(AgentWorkflowStatus.RevisionRequested)]
+    [InlineData(AgentWorkflowStatus.Approved)]
+    [InlineData(AgentWorkflowStatus.Rejected)]
+    [InlineData(AgentWorkflowStatus.Completed)]
+    [InlineData(AgentWorkflowStatus.FailedSafely)]
+    public async Task Approval_requires_a_pending_approval_workflow(AgentWorkflowStatus status)
+    {
+        _workflow.Status = status;
+        var act = () => DecideAsync("approve");
+
+        await act.Should().ThrowAsync<ConflictException>().WithMessage("*PendingApproval*");
+        _workflow.Status.Should().Be(status);
+        VerifyNoDecisionSideEffects();
+    }
+
+    [Fact]
+    public async Task Approval_without_a_proposal_does_not_start_a_transaction()
+    {
+        _workflow.FinalOutcome = null;
+        var act = () => DecideAsync("approve");
+
+        await act.Should().ThrowAsync<ConflictException>().WithMessage("*no proposal*");
+        VerifyNoDecisionSideEffects();
+    }
+
+    private Task<QuotationDecisionResponse> DecideAsync(string decision) => decision switch
+    {
+        "approve" => Service().ApproveAsync(Manager, _quotationId, null, CancellationToken.None),
+        "reject" => Service().RejectAsync(Manager, _quotationId, null, CancellationToken.None),
+        "revise" => Service().RequestRevisionAsync(Manager, _quotationId, "Cheaper hotels", CancellationToken.None),
+        _ => throw new ArgumentOutOfRangeException(nameof(decision))
+    };
+
+    private void VerifyNoDecisionSideEffects()
+    {
+        _trip.Status.Should().Be(TripRequestStatus.PendingApproval);
+        _holds.VerifyNoOtherCalls();
+        _agent.VerifyNoOtherCalls();
+        _audit.VerifyNoOtherCalls();
+        _unitOfWork.VerifyNoOtherCalls();
+        _quotations.Verify(q => q.SetStatusAsync(It.IsAny<Guid>(), It.IsAny<QuotationDecision>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+        _quotations.Verify(q => q.RecordDecision(It.IsAny<Guid>(), It.IsAny<Guid>(),
+            It.IsAny<QuotationDecision>(), It.IsAny<string?>()), Times.Never);
+        _trips.Verify(t => t.AddItinerary(It.IsAny<Itinerary>()), Times.Never);
+    }
 }
