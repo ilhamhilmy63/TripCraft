@@ -111,6 +111,7 @@ backend/tests/TripCraft.Tests/Quotations/QuotationCalculatorTests.cs
 backend/tests/TripCraft.Tests/Quotations/QuotationDecisionValidatorsTests.cs
 backend/tests/TripCraft.Tests/Quotations/QuotationsEndpointsTests.cs
 backend/tests/TripCraft.Tests/Quotations/QuotationStatusCodeTests.cs
+backend/tests/TripCraft.Tests/Quotations/ReportRangeValidatorTests.cs
 backend/tests/TripCraft.Tests/Quotations/ReportServiceTests.cs
 backend/tests/TripCraft.Tests/Shared/Database/ApprovalTransactionPostgresTests.cs
 backend/tests/TripCraft.Tests/Shared/Database/ApprovalWithRealResourcesPostgresTests.cs
