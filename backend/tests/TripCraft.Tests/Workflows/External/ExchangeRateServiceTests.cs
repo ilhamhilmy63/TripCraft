@@ -68,4 +68,39 @@ public class ExchangeRateServiceTests
         rate.Stale.Should().BeTrue();
         rate.Rate.Should().Be(300m);
     }
+
+    [Theory]
+    [InlineData("{\"result\":\"success\",\"rates\":{}}")]
+    [InlineData("{\"result\":\"success\",\"rates\":{\"LKR\":0}}")]
+    [InlineData("{\"result\":\"success\",\"rates\":{\"LKR\":-1}}")]
+    [InlineData("{\"result\":\"success\",\"time_last_update_unix\":9223372036854775807,\"rates\":{\"LKR\":300}}")]
+    [InlineData("not json")]
+    public async Task Invalid_provider_data_preserves_the_last_known_rate(string response)
+    {
+        var known = await Service(StubHandler.Json(Success)).GetUsdToLkrAsync(CancellationToken.None);
+        _cache.Remove(ExchangeRateService.FreshKey);
+
+        var rate = await Service(StubHandler.Json(response)).GetUsdToLkrAsync(CancellationToken.None);
+
+        rate.Should().Be(known with { Stale = true });
+        _cache.TryGetValue(ExchangeRateService.FreshKey, out object? _).Should().BeFalse();
+        _cache.Get<TripCraft.Application.Workflows.External.ExchangeRate>(ExchangeRateService.LastKnownKey)
+            .Should().Be(known);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("invalid")]
+    [InlineData("0")]
+    [InlineData("-300")]
+    public async Task Invalid_configured_fallback_uses_the_positive_default(string configured)
+    {
+        var rate = await Service(StubHandler.Status(HttpStatusCode.ServiceUnavailable),
+                ("FX_FALLBACK_LKR_PER_USD", configured))
+            .GetUsdToLkrAsync(CancellationToken.None);
+
+        rate.Rate.Should().Be(300m);
+        rate.Stale.Should().BeTrue();
+        rate.AsOf.Should().Be(DateTime.UnixEpoch);
+    }
 }
