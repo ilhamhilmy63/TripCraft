@@ -22,9 +22,7 @@ which files below you wrote yourself, which you reviewed, and which were written
 
 ### Files in this component (generated from the repository)
 
-> **Status at the time of writing:** the approval transaction, deterministic validation and workflow monitor are
-> in the repository; the quotation entities and store (`IQuotationStore`), the quotation list and the reports API
-> are **not built yet** (placeholders answer 503). Add your new folders to this list as you build them.
+> **Current branch status:** quotation calculation, services, persistence, approval, workflow and reporting code is retained in this source-only contribution branch. The file list below is the original report template; use `../student-c-files.txt` for the current inventory and the root README for integration requirements. Complete personal contribution claims and declarations yourself.
 
 - `agents/app/nodes/validation.py`
 - `agents/app/tools/calculate_quotation.py`
