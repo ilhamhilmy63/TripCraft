@@ -21,7 +21,7 @@ public class ReportService(IReportQueries queries) : IReportService
         return resources
             .Select(r =>
             {
-                var held = holds.Where(h => h.ResourceId == r.ResourceId)
+                var held = holds.Where(h => h.ResourceType == r.ResourceType && h.ResourceId == r.ResourceId)
                     .Sum(h => ReportMath.ClippedDays(h.From, h.To, q.From, q.To));
                 held = Math.Min(held, days); // holds of one resource never overlap, but be safe
                 return new UtilisationDto(r.ResourceType, r.ResourceId, r.Name, held, days, ReportMath.Percent(held, days));
