@@ -71,6 +71,11 @@ public class QuotationApprovalService(
             await unitOfWork.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            unitOfWork.DiscardChanges();
+            throw;
+        }
         catch (Exception ex) when (ex is ConflictException or ComponentNotAvailableException)
         {
             unitOfWork.DiscardChanges();

@@ -106,6 +106,25 @@ public class QuotationApprovalServiceTests
     }
 
     [Fact]
+    public async Task Cancelled_approval_discards_changes_and_preserves_cancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var transaction = new Mock<IUnitOfWorkTransaction>();
+        _unitOfWork.Setup(u => u.BeginTransactionAsync(cancellation.Token)).ReturnsAsync(transaction.Object);
+        _unitOfWork.Setup(u => u.SaveChangesAsync(cancellation.Token))
+            .Callback(() => cancellation.Cancel())
+            .ThrowsAsync(new OperationCanceledException(cancellation.Token));
+
+        var act = () => Service().ApproveAsync(Manager, _quotationId, null, cancellation.Token);
+
+        var error = await act.Should().ThrowAsync<OperationCanceledException>();
+        error.Which.CancellationToken.Should().Be(cancellation.Token);
+        _unitOfWork.Verify(u => u.DiscardChanges(), Times.Once);
+        transaction.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        transaction.Verify(t => t.DisposeAsync(), Times.Once);
+    }
+
+    [Fact]
     public async Task Request_revision_saves_first_then_calls_the_planner_and_records_a_failed_replan()
     {
         var order = new List<string>();
