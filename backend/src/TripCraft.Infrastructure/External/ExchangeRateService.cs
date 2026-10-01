@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Caching.Memory;
@@ -44,7 +45,7 @@ public class ExchangeRateService(
             if (cache.TryGetValue(LastKnownKey, out ExchangeRate? last) && last is not null)
                 return last with { Stale = true };
 
-            var fallback = decimal.TryParse(configuration["FX_FALLBACK_LKR_PER_USD"], out var configured) && configured > 0
+            var fallback = decimal.TryParse(configuration["FX_FALLBACK_LKR_PER_USD"], NumberStyles.Float, CultureInfo.InvariantCulture, out var configured) && configured > 0
                 ? configured
                 : DefaultFallbackRate;
             // AsOf = Unix epoch means "unknown": no real rate has been fetched since start-up.

@@ -120,6 +120,7 @@ backend/tests/TripCraft.Tests/Shared/Database/QuotationConstraintPostgresTests.c
 backend/tests/TripCraft.Tests/Workflows/AgentContractTests.cs
 backend/tests/TripCraft.Tests/Workflows/ApprovedItineraryTests.cs
 backend/tests/TripCraft.Tests/Workflows/External/AgentServiceClientTests.cs
+backend/tests/TripCraft.Tests/Workflows/External/ExchangeRateCultureTests.cs
 backend/tests/TripCraft.Tests/Workflows/External/ExchangeRateServiceTests.cs
 backend/tests/TripCraft.Tests/Workflows/External/ExternalServicesSetupTests.cs
 backend/tests/TripCraft.Tests/Workflows/External/HttpResilienceTests.cs
