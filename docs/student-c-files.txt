@@ -109,6 +109,7 @@ backend/tests/TripCraft.Tests/Quotations/QuotationApprovalServiceTests.cs
 backend/tests/TripCraft.Tests/Quotations/QuotationApprovalTests.cs
 backend/tests/TripCraft.Tests/Quotations/QuotationCalculatorTests.cs
 backend/tests/TripCraft.Tests/Quotations/QuotationDecisionValidatorsTests.cs
+backend/tests/TripCraft.Tests/Quotations/QuotationEndDateTests.cs
 backend/tests/TripCraft.Tests/Quotations/QuotationListValidatorTests.cs
 backend/tests/TripCraft.Tests/Quotations/QuotationRoundingTests.cs
 backend/tests/TripCraft.Tests/Quotations/QuotationsEndpointsTests.cs
