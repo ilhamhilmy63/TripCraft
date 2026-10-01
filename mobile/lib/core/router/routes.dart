@@ -7,16 +7,16 @@ class Routes {
   static const register = '/register';
   static const notSupported = '/not-supported';
 
-  // Guide
-  static const schedule = '/schedule';
-  static const tripDay = '/schedule/day';
-  static const scan = '/scan';
+  // Tourist
+  static const trips = '/trips';
+  static const newTrip = '/trips/new';
+  static String trip(String id) => '/trips/$id';
 
   static const publicPaths = {login, register};
 }
 
 /// Landing page per role (PLAN.md section 2): staff use the React app, not this one.
 String homeForRole(String role) => switch (role) {
-  'Guide' => Routes.schedule,
+  'Tourist' => Routes.trips,
   _ => Routes.notSupported,
 };

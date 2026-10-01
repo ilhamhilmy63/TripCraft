@@ -23,9 +23,8 @@ String? authRedirect(AsyncValue<AppUser?> auth, String location) {
   }
   if (home == Routes.notSupported) return location == home ? null : home;
 
-  final guideArea =
-      location.startsWith(Routes.schedule) || location.startsWith(Routes.scan);
-  if (user.role != 'Guide' && guideArea) return home;
+  final touristArea = location.startsWith(Routes.trips);
+  if (user.role != 'Tourist' && touristArea) return home;
   if (location == Routes.notSupported) return home;
   return null;
 }
