@@ -1,100 +1,99 @@
-# TripCraft — Student B Component
+# TripCraft — Student A Component
 
-This branch contains only the work assigned to **Student B** for TripCraft.
+This branch contains only the work assigned to **Student A** for TripCraft.
 
 ## Component scope
 
-- Guide management
-- Vehicle management
-- Hotel and room-type management
-- Resource availability searches
-- Transactional resource holds
-- Resource & Action agent
-- OpenRouteService distance integration
-- Guide schedule and trip-day views
-- GPS stop check-in
-- QR voucher scanning
+- Trip request creation, listing, editing and cancellation
+- Attraction management
+- Day-by-day itinerary generation and display
+- Planner / Coordinator agent
+- Itinerary Analysis agent
+- OpenWeatherMap forecast integration
+- Passport-photo capture using the device camera or gallery
+- Date-range picker for trip dates
+- Itinerary map with location markers
 
-Trip Requests & Itinerary and Quotation, Approval & Reporting features owned by other students are intentionally excluded.
+The Resource Management and Quotation, Approval & Reporting components owned by other students are intentionally excluded from this branch.
 
 ## Main features
 
-### Resource Management
+### Trip Requests & Itinerary
 
-Operations managers can create, update, list and deactivate guides, vehicles and hotels. Hotels include room types with capacity, nightly rates and available room counts.
+Tourists can submit a trip request with an objective, travel dates, passenger count, budget, preferences and passport photo. Operations managers can browse trip requests, manage attractions and inspect or edit itinerary details.
 
-Availability searches filter resources by travel dates, passenger count, language and city. Resource holds reject overlapping guide or vehicle reservations and prevent room inventory from becoming negative.
+The backend validates dates, passenger counts, trip ownership and uploaded images. It stores trip requests, attractions, itineraries, itinerary days and itinerary stops.
 
-### Resource & Action Agent
+### Planner / Coordinator Agent
 
-The Resource & Action agent receives the proposed itinerary and finds suitable guides, vehicles and rooms. It reports any availability gaps and proposes resources without directly confirming a booking.
+The Planner converts the tourist's request into an ordered plan with constraints such as cities, dates, passenger count, preferences and budget. It uses the allowed `parse_dates` and `list_agents` tools.
 
-Its relevant tools are:
+### Itinerary Analysis Agent
 
-- `check_guide_availability`
-- `check_vehicle_availability`
-- `check_room_availability`
-- `get_rate_card`
+The Itinerary Analysis agent builds the day-by-day travel plan. It selects attractions, orders stops, chooses transport information and attaches available weather information. Its relevant tools are:
 
-### OpenRouteService
+- `get_attractions`
+- `get_distance`
+- `get_weather`
 
-`DistanceService` obtains road distance and duration information from OpenRouteService. The integration uses a controlled HTTP client and falls back safely when the provider is unavailable.
+### OpenWeatherMap
+
+`WeatherService` calls the OpenWeatherMap five-day forecast API. Weather is advisory: when the API key is missing, the requested date is outside the forecast window, or the provider fails, itinerary planning continues without weather.
 
 ### Mobile device features
 
-- GPS-based guide check-in at itinerary stops
-- QR voucher scanning
-- Guide schedule and trip-day views
+- Camera/gallery passport-photo selection
+- Date-range picker
+- Interactive itinerary map
 
 ## Repository structure
 
 ```text
 agents/
-  app/nodes/resources.py
-  app/tools/check_guide_availability.py
-  app/tools/check_vehicle_availability.py
-  app/tools/check_room_availability.py
-  app/tools/get_rate_card.py
-  tests/test_resources.py
+  app/nodes/planner.py
+  app/nodes/itinerary.py
+  app/tools/
+  tests/test_planner.py
+  tests/test_itinerary.py
 
 backend/
-  src/TripCraft.Api/Controllers/Resources/
-  src/TripCraft.Application/Resources/
-  src/TripCraft.Infrastructure/Resources/
-  src/TripCraft.Infrastructure/External/DistanceService.cs
-  tests/TripCraft.Tests/Resources/
-  tests/TripCraft.Tests/Workflows/External/DistanceServiceTests.cs
+  src/TripCraft.Api/Controllers/Trips/
+  src/TripCraft.Application/Trips/
+  src/TripCraft.Infrastructure/Trips/
+  src/TripCraft.Infrastructure/External/WeatherService.cs
+  tests/TripCraft.Tests/Trips/
+  tests/TripCraft.Tests/Workflows/External/WeatherServiceTests.cs
 
 web/
-  src/features/resources/
+  src/features/trips/
 
 mobile/
-  lib/features/resources/
-  test/resources/
+  lib/features/trips/
+  test/trips/
 
 docs/
-  adr/ADR-005-cloud-deployment-platform.md
-  adr/ADR-006-llm-provider.md
-  report/individual-B.md
+  adr/ADR-002-flutter-state-management.md
+  adr/ADR-003-agentic-ai-framework.md
+  report/individual-A.md
 ```
 
 ## Configuration
 
-Copy the example environment file and configure the services being run. OpenRouteService uses:
+Copy the example environment file and provide values required by the service being run. The weather integration uses:
 
 ```env
-ORS_API_KEY=your_openrouteservice_api_key
+OWM_API_KEY=your_openweathermap_api_key
 ```
 
 Do not commit real secrets or local environment files.
 
-## Run the Resource & Action agent tests
+## Run the Planner and Itinerary agents
 
 ```bash
 cd agents
 python -m venv .venv
 pip install -r requirements.txt
-pytest tests/test_resources.py
+pytest tests/test_planner.py tests/test_itinerary.py
 ```
 
 ## Run the web interface
@@ -105,7 +104,11 @@ npm install
 npm run dev
 ```
 
-Student B's React routes cover guides, vehicles, hotels and availability.
+The included React routes are limited to:
+
+- `/trips`
+- `/trips/:id`
+- `/attractions`
 
 ## Run the Flutter application
 
@@ -115,16 +118,16 @@ flutter pub get
 flutter run
 ```
 
-The Student B mobile flow includes guide schedules, GPS check-in and QR voucher scanning.
+The Flutter application includes the Student A tourist flow: registration/login, trip request submission, passport-photo capture, trip history, itinerary details and map display.
 
 ## Relevant tests
 
-- Agent tests: `agents/tests/test_resources.py`
-- Backend tests: `backend/tests/TripCraft.Tests/Resources/`
-- OpenRouteService tests: `backend/tests/TripCraft.Tests/Workflows/External/DistanceServiceTests.cs`
-- React tests: `web/src/features/resources/__tests__/`
-- Flutter tests: `mobile/test/resources/`
+- Agent tests: `agents/tests/test_planner.py`, `agents/tests/test_itinerary.py`
+- Backend tests: `backend/tests/TripCraft.Tests/Trips/`
+- Weather tests: `backend/tests/TripCraft.Tests/Workflows/External/WeatherServiceTests.cs`
+- React tests: `web/src/features/trips/__tests__/`
+- Flutter tests: `mobile/test/trips/`
 
 ## Branch
 
-Student B work is maintained on branch `IT24103817`.
+Student A work is maintained on branch `IT24103652`.
