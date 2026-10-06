@@ -26,7 +26,10 @@ public class TripDetailsValidator : AbstractValidator<ITripDetails>
         RuleFor(x => x.Cities).NotEmpty().WithMessage("Choose at least one city from the list.");
         RuleFor(x => x.Cities!.Count).LessThanOrEqualTo(10).When(x => x.Cities is not null).WithName("cities")
             .WithMessage("Choose at most 10 cities.");
-        RuleFor(x => x.Cities).Must(c => c!.Distinct(StringComparer.OrdinalIgnoreCase).Count() == c!.Count)
+        RuleFor(x => x.Cities).Must(c => c!
+                .Select(city => city.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count() == c!.Count)
             .When(x => x.Cities is not null).WithMessage("Each city can only be chosen once.");
         RuleFor(x => x.Cities).Must((x, c) => c!.Count <= TripPlanningRules.TripDays(x.StartDate, x.EndDate))
             .When(x => x.Cities is not null && x.EndDate >= x.StartDate)

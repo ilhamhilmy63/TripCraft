@@ -74,4 +74,12 @@ public class TripsValidatorTests
         _validator.Validate(Valid() with { EndDate = Valid().StartDate, Cities = ["Kandy", "Ella"] }).Errors
             .Should().Contain(e => e.ErrorMessage == "Choose at most one city per trip day.");
     }
+
+    [Fact]
+    public void Cities_are_unique_after_service_whitespace_normalization()
+    {
+        var result = _validator.Validate(Valid() with { Cities = ["Kandy", " Kandy "] });
+
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Each city can only be chosen once.");
+    }
 }
